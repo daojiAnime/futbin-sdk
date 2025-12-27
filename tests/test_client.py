@@ -83,3 +83,25 @@ async def test_get_latest_players():
         assert len(players) > 0
         assert players[0].futbin_id > 0
         assert players[0].name != ""
+
+
+@pytest.mark.asyncio
+async def test_get_leagues_and_clubs():
+    """测试获取联赛和俱乐部"""
+    async with FutbinClient() as client:
+        leagues = await client.get_leagues_and_clubs()
+        assert len(leagues) > 0
+        assert leagues[0].league_id > 0
+        assert leagues[0].name != ""
+        # 验证俱乐部
+        if leagues[0].clubs:
+            assert leagues[0].clubs[0].club_id > 0
+
+
+@pytest.mark.asyncio
+async def test_get_card_versions():
+    """测试获取卡片版本"""
+    async with FutbinClient() as client:
+        versions = await client.get_card_versions()
+        assert len(versions) > 0
+        assert versions[0].name != ""

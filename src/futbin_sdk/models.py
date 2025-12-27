@@ -234,3 +234,76 @@ class LeagueCard(BaseModel):
     league_id: int = Field(default=0, description="联赛 ID")
     price_ps: int = Field(default=0, description="PS 价格")
     price_pc: int = Field(default=0, description="PC 价格")
+
+
+class League(BaseModel):
+    """联赛信息"""
+
+    league_id: int = Field(description="联赛 ID")
+    name: str = Field(default="", description="联赛名称")
+    clubs: list["Club"] = Field(default_factory=list, description="俱乐部列表")
+
+    @classmethod
+    def from_api_response(cls, data: dict[str, Any]) -> "League":
+        """从 API 响应解析联赛"""
+        clubs = [Club.from_api_response(c) for c in data.get("clubs", [])]
+        return cls(
+            league_id=int(data.get("league_id", 0)),
+            name=data.get("league_name", ""),
+            clubs=clubs,
+        )
+
+
+class Club(BaseModel):
+    """俱乐部信息"""
+
+    club_id: int = Field(description="俱乐部 ID")
+    name: str = Field(default="", description="俱乐部名称")
+
+    @classmethod
+    def from_api_response(cls, data: dict[str, Any]) -> "Club":
+        """从 API 响应解析俱乐部"""
+        return cls(
+            club_id=int(data.get("club_id", 0)),
+            name=data.get("club_name", ""),
+        )
+
+
+class CardVersionInfo(BaseModel):
+    """卡片版本信息"""
+
+    name: str = Field(default="", description="版本名称")
+    key: str = Field(default="", description="版本键名")
+    img: str = Field(default="", description="图片标识")
+
+    @classmethod
+    def from_api_response(cls, data: dict[str, Any]) -> "CardVersionInfo":
+        """从 API 响应解析卡片版本"""
+        return cls(
+            name=data.get("version_name", ""),
+            key=data.get("get", ""),
+            img=data.get("img", ""),
+        )
+
+
+# 位置常量
+class Position(StrEnum):
+    """球员位置"""
+
+    GK = "GK"
+    RB = "RB"
+    RWB = "RWB"
+    LB = "LB"
+    LWB = "LWB"
+    CB = "CB"
+    CDM = "CDM"
+    CM = "CM"
+    CAM = "CAM"
+    RM = "RM"
+    RW = "RW"
+    RF = "RF"
+    LM = "LM"
+    LW = "LW"
+    LF = "LF"
+    CF = "CF"
+    ST = "ST"

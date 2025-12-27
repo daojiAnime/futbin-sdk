@@ -8,8 +8,10 @@ from fake_useragent import UserAgent
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
 
 from futbin_sdk.models import (
+    CardVersionInfo,
     ChemistryStyle,
     FullPlayer,
+    League,
     ManagerCard,
     Platform,
     PlayerPrice,
@@ -358,6 +360,62 @@ class FutbinClient:
             players.append(FullPlayer.from_api_response(item))
 
         return players
+
+    # =========================================================================
+    # Leagues & Clubs API
+    # =========================================================================
+
+    @retry(
+        stop=stop_after_attempt(DEFAULT_RETRY_ATTEMPTS),
+        wait=wait_fixed(DEFAULT_RETRY_DELAY),
+        retry=retry_if_exception_type((httpx.RequestError, httpx.TimeoutException)),
+    )
+    async def get_leagues_and_clubs(self) -> list[League]:
+        """获取所有联赛和俱乐部
+
+        Returns:
+            League 列表（每个联赛包含其俱乐部）
+        """
+        url = f"{FUTBIN_API_BASE}/getLeaguesAndClubsAndroid"
+
+        resp = await self.async_client.get(url)
+        resp.raise_for_status()
+
+        data = resp.json()
+        leagues: list[League] = []
+
+        for item in data.get("data", []):
+            leagues.append(League.from_api_response(item))
+
+        return leagues
+
+    # =========================================================================
+    # Card Versions API
+    # =========================================================================
+
+    @retry(
+        stop=stop_after_attempt(DEFAULT_RETRY_ATTEMPTS),
+        wait=wait_fixed(DEFAULT_RETRY_DELAY),
+        retry=retry_if_exception_type((httpx.RequestError, httpx.TimeoutException)),
+    )
+    async def get_card_versions(self) -> list[CardVersionInfo]:
+        """获取所有卡片版本
+
+        Returns:
+            CardVersionInfo 列表
+        """
+        url = f"{FUTBIN_API_BASE}/getCardVersions"
+
+        resp = await self.async_client.get(url)
+        resp.raise_for_status()
+
+        data = resp.json()
+        versions: list[CardVersionInfo] = []
+
+        for item in data.get("data", []):
+            versions.append(CardVersionInfo.from_api_response(item))
+
+        return versions
 
     # =========================================================================
     # Consumables API (requires web scraping)
