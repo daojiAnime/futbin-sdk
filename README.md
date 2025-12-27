@@ -26,7 +26,7 @@ uv add futbin-sdk
 
 ```python
 import asyncio
-from futbin_sdk import FutbinClient, Platform, PlayerSearchOptions
+from futbin_sdk import FutbinClient, Platform, PlayerSearchOptions, get_nation_name
 
 async def main():
     async with FutbinClient() as client:
@@ -47,6 +47,16 @@ async def main():
         )
         players = await client.search_players(options=options)
 
+        # Advanced search with detailed attributes
+        options = PlayerSearchOptions(
+            platform="PS",
+            min_pace=90,
+            min_shooting=85,
+            min_skills=4,
+            min_weak_foot=4,
+        )
+        fast_strikers = await client.search_players(options=options)
+
         # Get Team of the Week
         totw = await client.get_totw()
 
@@ -58,6 +68,9 @@ async def main():
 
         # Get card versions (TOTW, TOTY, Icons, etc.)
         versions = await client.get_card_versions()
+
+        # Use nations data
+        nation = get_nation_name(54)  # Returns "Ethiopia"
 
 asyncio.run(main())
 ```
@@ -93,23 +106,134 @@ print(f"Price: {price.price}")
 | `get_leagues_and_clubs()` | Get all leagues with their clubs |
 | `get_card_versions()` | Get all card versions (TOTW, Icons, etc.) |
 
+### Nations Data
+
+```python
+from futbin_sdk import NATIONS, get_nation_name, get_nation_id
+
+# Get nation name by ID
+name = get_nation_name(22)  # Returns "Brazil"
+
+# Get nation ID by name
+nation_id = get_nation_id("Brazil")  # Returns 22
+
+# Access full nations dictionary
+print(NATIONS[22])  # "Brazil"
+```
+
 ### Search Options
 
-`PlayerSearchOptions` supports:
+`PlayerSearchOptions` supports **40+ detailed attributes** for filtering players:
+
+#### Basic Filters
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `platform` | str | Platform: "PS" or "PC" |
 | `page` | int | Page number (default: 1) |
+| `sort` | str | Sort field |
+| `order` | str | Sort order ("asc" or "desc") |
 | `version` | str | Card version filter |
 | `position` | list[str] | Position filter (e.g., ["ST", "CF"]) |
 | `nation_id` | int | Nation ID filter |
 | `league_id` | int | League ID filter |
 | `club_id` | int | Club ID filter |
-| `min_rating` | int | Minimum rating |
-| `max_rating` | int | Maximum rating |
-| `min_price` | int | Minimum price |
-| `max_price` | int | Maximum price |
+
+#### Rating & Price
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `min_rating` / `max_rating` | int | Rating range |
+| `min_price` / `max_price` | int | Price range |
+
+#### Skills & Physical
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `min_skills` / `max_skills` | int | Skill moves (1-5) |
+| `min_weak_foot` / `max_weak_foot` | int | Weak foot (1-5) |
+| `foot` | Foot | Preferred foot (LEFT/RIGHT) |
+| `min_height` / `max_height` | int | Height in cm |
+| `min_weight` / `max_weight` | int | Weight in kg |
+
+#### Six Main Attributes
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `min_pace` / `max_pace` | int | Pace |
+| `min_shooting` / `max_shooting` | int | Shooting |
+| `min_passing` / `max_passing` | int | Passing |
+| `min_dribbling` / `max_dribbling` | int | Dribbling |
+| `min_defending` / `max_defending` | int | Defending |
+| `min_physical` / `max_physical` | int | Physical |
+
+#### Detailed Pace Attributes
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `min_acceleration` / `max_acceleration` | int | Acceleration |
+| `min_sprint_speed` / `max_sprint_speed` | int | Sprint Speed |
+
+#### Detailed Shooting Attributes
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `min_positioning` / `max_positioning` | int | Positioning |
+| `min_finishing` / `max_finishing` | int | Finishing |
+| `min_shot_power` / `max_shot_power` | int | Shot Power |
+| `min_long_shots` / `max_long_shots` | int | Long Shots |
+| `min_volleys` / `max_volleys` | int | Volleys |
+| `min_penalties` / `max_penalties` | int | Penalties |
+
+#### Detailed Passing Attributes
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `min_vision` / `max_vision` | int | Vision |
+| `min_crossing` / `max_crossing` | int | Crossing |
+| `min_free_kick` / `max_free_kick` | int | Free Kick Accuracy |
+| `min_short_passing` / `max_short_passing` | int | Short Passing |
+| `min_long_passing` / `max_long_passing` | int | Long Passing |
+| `min_curve` / `max_curve` | int | Curve |
+
+#### Detailed Dribbling Attributes
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `min_agility` / `max_agility` | int | Agility |
+| `min_balance` / `max_balance` | int | Balance |
+| `min_reactions` / `max_reactions` | int | Reactions |
+| `min_ball_control` / `max_ball_control` | int | Ball Control |
+| `min_composure` / `max_composure` | int | Composure |
+
+#### Detailed Defending Attributes
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `min_interceptions` / `max_interceptions` | int | Interceptions |
+| `min_heading_accuracy` / `max_heading_accuracy` | int | Heading Accuracy |
+| `min_marking` / `max_marking` | int | Marking |
+| `min_standing_tackle` / `max_standing_tackle` | int | Standing Tackle |
+| `min_sliding_tackle` / `max_sliding_tackle` | int | Sliding Tackle |
+
+#### Detailed Physical Attributes
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `min_jumping` / `max_jumping` | int | Jumping |
+| `min_stamina` / `max_stamina` | int | Stamina |
+| `min_strength` / `max_strength` | int | Strength |
+| `min_aggression` / `max_aggression` | int | Aggression |
+
+#### Goalkeeper Attributes
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `min_gk_diving` / `max_gk_diving` | int | GK Diving |
+| `min_gk_handling` / `max_gk_handling` | int | GK Handling |
+| `min_gk_kicking` / `max_gk_kicking` | int | GK Kicking |
+| `min_gk_positioning` / `max_gk_positioning` | int | GK Positioning |
+| `min_gk_reflexes` / `max_gk_reflexes` | int | GK Reflexes |
 
 ## Models
 
@@ -123,6 +247,7 @@ print(f"Price: {price.price}")
 | `CardVersionInfo` | Card version (TOTW, TOTY, etc.) |
 | `Platform` | Platform enum (PS, PC, XBOX) |
 | `Position` | Position enum (GK, CB, ST, etc.) |
+| `Foot` | Foot enum (LEFT, RIGHT) |
 
 ## Configuration
 
@@ -140,12 +265,13 @@ client = FutbinClient(
 |---------|--------------------|-----------------------|-------------|
 | Player prices | ✅ | ✅ | ✅ |
 | Search/filter players | ✅ | ✅ | ✅ |
+| 40+ search attributes | ✅ | ✅ | ❌ |
 | Popular players | ✅ | ✅ | ❌ |
 | TOTW players | ✅ | ✅ | ❌ |
 | Latest players | ✅ | ✅ | ❌ |
 | Leagues & Clubs | ✅ | ✅ | ❌ |
 | Card versions | ✅ | ✅ | ❌ |
-| Nations data | 🔜 | ✅ | ❌ |
+| Nations data | ✅ | ✅ | ❌ |
 | Async support | ✅ | ❌ | ❌ |
 | Type hints | ✅ | ✅ | ❌ |
 

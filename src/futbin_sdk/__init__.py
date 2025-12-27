@@ -8,6 +8,7 @@ from futbin_sdk.models import (
     CardVersion,
     CardVersionInfo,
     Club,
+    Foot,
     FullPlayer,
     League,
     Platform,
@@ -17,19 +18,26 @@ from futbin_sdk.models import (
     PopularPlayer,
     Position,
 )
+from futbin_sdk.nations import NATIONS, get_nation_id, get_nation_name
 
 __version__ = "0.1.0"
 __all__ = [
     "FutbinClient",
+    # Models
     "Player",
     "PlayerPrice",
     "Platform",
     "CardVersion",
     "CardVersionInfo",
     "Club",
+    "Foot",
     "FullPlayer",
     "League",
     "PlayerSearchOptions",
     "PopularPlayer",
     "Position",
+    # Nations
+    "NATIONS",
+    "get_nation_id",
+    "get_nation_name",
 ]
