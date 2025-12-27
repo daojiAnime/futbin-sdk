@@ -9,9 +9,11 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fi
 
 from futbin_sdk.models import (
     ChemistryStyle,
+    FullPlayer,
     ManagerCard,
     Platform,
     PlayerPrice,
+    PlayerSearchOptions,
     PopularPlayer,
 )
 
@@ -265,6 +267,95 @@ class FutbinClient:
                     price_pc=int(item.get("pc_LCPrice", 0) or 0),
                 )
             )
+
+        return players
+
+    # =========================================================================
+    # Search / Filter Players API
+    # =========================================================================
+
+    @retry(
+        stop=stop_after_attempt(DEFAULT_RETRY_ATTEMPTS),
+        wait=wait_fixed(DEFAULT_RETRY_DELAY),
+        retry=retry_if_exception_type((httpx.RequestError, httpx.TimeoutException)),
+    )
+    async def search_players(
+        self,
+        options: PlayerSearchOptions | None = None,
+        **kwargs: Any,
+    ) -> list[FullPlayer]:
+        """搜索球员
+
+        Args:
+            options: 搜索选项对象
+            **kwargs: 直接传入搜索参数
+
+        Returns:
+            FullPlayer 列表
+        """
+        url = f"{FUTBIN_API_BASE}/getFilteredPlayers"
+
+        if options:
+            params = options.to_params()
+        else:
+            params = {"platform": "PS", "page": 1, **kwargs}
+
+        resp = await self.async_client.get(url, params=params)
+        resp.raise_for_status()
+
+        data = resp.json()
+        players: list[FullPlayer] = []
+
+        for item in data.get("data", []):
+            players.append(FullPlayer.from_api_response(item))
+
+        return players
+
+    @retry(
+        stop=stop_after_attempt(DEFAULT_RETRY_ATTEMPTS),
+        wait=wait_fixed(DEFAULT_RETRY_DELAY),
+        retry=retry_if_exception_type((httpx.RequestError, httpx.TimeoutException)),
+    )
+    async def get_totw(self) -> list[FullPlayer]:
+        """获取本周最佳球员 (Team of the Week)
+
+        Returns:
+            FullPlayer 列表
+        """
+        url = f"{FUTBIN_API_BASE}/currentTOTW"
+
+        resp = await self.async_client.get(url)
+        resp.raise_for_status()
+
+        data = resp.json()
+        players: list[FullPlayer] = []
+
+        for item in data.get("data", []):
+            players.append(FullPlayer.from_api_response(item))
+
+        return players
+
+    @retry(
+        stop=stop_after_attempt(DEFAULT_RETRY_ATTEMPTS),
+        wait=wait_fixed(DEFAULT_RETRY_DELAY),
+        retry=retry_if_exception_type((httpx.RequestError, httpx.TimeoutException)),
+    )
+    async def get_latest_players(self) -> list[FullPlayer]:
+        """获取最新球员
+
+        Returns:
+            FullPlayer 列表
+        """
+        url = f"{FUTBIN_API_BASE}/newPlayers"
+
+        resp = await self.async_client.get(url)
+        resp.raise_for_status()
+
+        data = resp.json()
+        players: list[FullPlayer] = []
+
+        for item in data.get("data", []):
+            players.append(FullPlayer.from_api_response(item))
 
         return players
 
